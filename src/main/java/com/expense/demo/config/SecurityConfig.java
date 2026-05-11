@@ -40,8 +40,11 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
+
                 .cors(cors -> {})
+
                 .formLogin(form -> form.disable())
+
                 .httpBasic(httpBasic -> httpBasic.disable())
 
                 .sessionManagement(session ->
@@ -50,12 +53,15 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
-                                "/auth/**")
-                        .permitAll()
+                                "/auth/**",
+                                "/api/auth/**"
+                        ).permitAll()
+
                         .anyRequest()
                         .authenticated())
 
-                .addFilterBefore(jwtFilter,
+                .addFilterBefore(
+                        jwtFilter,
                         UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -67,21 +73,20 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(
-                List.of(
-                        "http://localhost:4200",
-                        "*"));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:4200",
+                "https://expensify-self-ten.vercel.app"
+        ));
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "OPTIONS"));
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+        ));
 
-        configuration.setAllowedHeaders(
-                List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
 
         configuration.setAllowCredentials(true);
 
@@ -90,7 +95,8 @@ public class SecurityConfig {
 
         source.registerCorsConfiguration(
                 "/**",
-                configuration);
+                configuration
+        );
 
         return source;
     }
