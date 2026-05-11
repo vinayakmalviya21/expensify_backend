@@ -4,15 +4,13 @@ import java.time.LocalDate;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
-
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.core.Authentication;
-
 import org.springframework.web.bind.annotation.*;
 
 import com.expense.demo.dto.*;
 import com.expense.demo.entity.User;
+import com.expense.demo.repository.UserRepository;
 import com.expense.demo.service.ExpenseService;
 
 import lombok.RequiredArgsConstructor;
@@ -23,53 +21,45 @@ import lombok.RequiredArgsConstructor;
 public class ExpenseController {
 
     private final ExpenseService service;
+    private final UserRepository userRepository;
 
     // =========================
     // GET ALL EXPENSES
     // =========================
 
-    @GetMapping(
-        produces = "application/json"
-    )
-    public ResponseEntity<Page<ExpenseResponseDTO>>
-    getAll(
+    @GetMapping(produces = "application/json")
+    public ResponseEntity<Page<ExpenseResponseDTO>> getAll(
 
-            @RequestParam(
-                defaultValue = "0"
-            ) int page,
+            @RequestParam(defaultValue = "0") int page,
 
-            @RequestParam(
-                defaultValue = "10"
-            ) int size,
+            @RequestParam(defaultValue = "10") int size,
 
-            @RequestParam(
-                required = false
-            ) String category,
+            @RequestParam(required = false) String category,
 
-            @RequestParam(
-                required = false
-            ) LocalDate start,
+            @RequestParam(required = false) LocalDate start,
 
-            @RequestParam(
-                required = false
-            ) LocalDate end,
+            @RequestParam(required = false) LocalDate end,
 
             Authentication authentication
     ) {
 
-        User user =
-            (User) authentication.getPrincipal();
+        String email = authentication.getName();
+
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
 
         return ResponseEntity.ok(
 
-            service.getAll(
-                page,
-                size,
-                category,
-                start,
-                end,
-                user.getId()
-            )
+                service.getAll(
+                        page,
+                        size,
+                        category,
+                        start,
+                        end,
+                        user.getId()
+                )
 
         );
     }
@@ -81,18 +71,21 @@ public class ExpenseController {
     @PostMapping
     public ExpenseResponseDTO addExpense(
 
-            @RequestBody
-            ExpenseRequestDTO dto,
+            @RequestBody ExpenseRequestDTO dto,
 
             Authentication authentication
     ) {
 
-        User user =
-            (User) authentication.getPrincipal();
+        String email = authentication.getName();
+
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
 
         return service.addExpense(
-            dto,
-            user.getId()
+                dto,
+                user.getId()
         );
     }
 
@@ -106,13 +99,12 @@ public class ExpenseController {
 
             @PathVariable Long id,
 
-            @RequestBody
-            ExpenseRequestDTO dto
+            @RequestBody ExpenseRequestDTO dto
     ) {
 
         return ResponseEntity.ok(
 
-            service.updateExpense(id, dto)
+                service.updateExpense(id, dto)
 
         );
     }
@@ -122,7 +114,7 @@ public class ExpenseController {
     // =========================
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String,String>>
+    public ResponseEntity<Map<String, String>>
     deleteExpense(
             @PathVariable Long id
     ) {
@@ -131,10 +123,10 @@ public class ExpenseController {
 
         return ResponseEntity.ok(
 
-            Map.of(
-                "message",
-                "Expense deleted successfully"
-            )
+                Map.of(
+                        "message",
+                        "Expense deleted successfully"
+                )
 
         );
     }
