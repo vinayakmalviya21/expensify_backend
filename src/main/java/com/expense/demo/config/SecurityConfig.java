@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -36,27 +35,30 @@ public class SecurityConfig {
     }
 
     // 🔐 SECURITY FILTER CHAIN
-    @Configuration
-    @EnableWebSecurity
-    public class SecurityConfig {
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> {})
+                .formLogin(form -> form.disable())
+                .httpBasic(httpBasic -> httpBasic.disable())
 
-            http
-                    .csrf(csrf -> csrf.disable())
-                    .formLogin(form -> form.disable())
-                    .httpBasic(httpBasic -> httpBasic.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                    .authorizeHttpRequests(auth -> auth
-                            .requestMatchers(
-                                    "/",
-                                    "/api/auth/**")
-                            .permitAll()
-                            .anyRequest().authenticated());
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/",
+                                "/api/auth/**")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
 
-            return http.build();
-        }
+                .addFilterBefore(jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
     // 🌐 CORS CONFIGURATION
@@ -66,18 +68,25 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of("http://localhost:4200",
+                List.of(
+                        "http://localhost:4200",
                         "*"));
 
         configuration.setAllowedMethods(
-                List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                List.of(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "OPTIONS"));
 
         configuration.setAllowedHeaders(
                 List.of("*"));
 
         configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
 
         source.registerCorsConfiguration(
                 "/**",
