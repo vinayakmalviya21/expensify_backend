@@ -27,18 +27,26 @@ public class ExpenseController {
     // GET ALL EXPENSES
     // =========================
 
-    @GetMapping(produces = "application/json")
-    public ResponseEntity<Page<ExpenseResponseDTO>> getAll(
+    @GetMapping(
+            produces = "application/json"
+    )
+    public ResponseEntity<Page<ExpenseResponseDTO>>
+    getAll(
 
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "0")
+            int page,
 
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "10")
+            int size,
 
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false)
+            String category,
 
-            @RequestParam(required = false) LocalDate start,
+            @RequestParam(required = false)
+            LocalDate start,
 
-            @RequestParam(required = false) LocalDate end,
+            @RequestParam(required = false)
+            LocalDate end,
 
             Authentication authentication
     ) {
@@ -71,7 +79,8 @@ public class ExpenseController {
     @PostMapping
     public ExpenseResponseDTO addExpense(
 
-            @RequestBody ExpenseRequestDTO dto,
+            @RequestBody
+            ExpenseRequestDTO dto,
 
             Authentication authentication
     ) {
